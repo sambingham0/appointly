@@ -1,7 +1,12 @@
+using appointly;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// database connection
+builder.Services.AddSqlite<AppointlyDbContext>("Data Source=appointly.db");
 
 var app = builder.Build();
 
