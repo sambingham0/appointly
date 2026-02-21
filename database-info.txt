@@ -1,12 +1,38 @@
-NuGet Packages:
+APPOINTLY – DATABASE SETUP
+Project uses .NET 9 and EF Core 9.0.10
+
+NUGET PACKAGES - (You should NOT need to run these unless something breaks)
   - dotnet add package Microsoft.EntityFrameworkCore --version 9.0.10
   - dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 9.0.10
   - dotnet add package Microsoft.EntityFrameworkCore.Tools --version 9.0.10
 
-Database Setup:
-  1. Install EF CLI:
-    - dotnet tool install --global dotnet-ef --version 9.0.10
-  2. Add Migration:
-    - dotnet ef migrations add InitialCreate
-  3. Update Database:
-    - dotnet ef database update
+FIRST TIME SETUP
+  1. Restore Local EF CLI Tool
+      - I setup a local tool manifest (dotnet-tools.json) so that way if we have 
+        different versions of NET then a global install command of NET 9 version 
+        won't affect our other assignments/projects
+
+  - Run:
+    - dotnet tool restore
+    - This installs dotnet-ef version 9.0.10 for THIS project only
+
+  2. Create / Update Local Database
+    - Run:
+        - dotnet ef database update
+    - This will:
+        - Create appointly.db (if it does not exist)
+        - Apply all migrations
+        - Build the database schema
+    * Do NOT run "dotnet ef migrations add" unless you are changing models
+
+IF YOU CHANGE MODELS
+  - Only the person making model changes should run:
+      - dotnet ef migrations add MigrationNameHere
+      - dotnet ef database update
+
+IMPORTANT NOTES
+  - appointly.db is in .gitignore
+  - Each of us has their own local database file
+  - The schema stays in sync via migrations
+  - The data in each developer’s database will be different but the structure of the
+    database is the same

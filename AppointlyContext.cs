@@ -3,10 +3,10 @@ using appointly.Models;
 
 namespace appointly;
 
-public class AppointlyDbContext : DbContext
+public class AppointlyContext : DbContext
 {
-    public AppointlyDbContext(
-        DbContextOptions<AppointlyDbContext> options) : base(options)
+    public AppointlyContext(
+        DbContextOptions<AppointlyContext> options) : base(options)
     {
     }
 
