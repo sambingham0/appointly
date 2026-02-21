@@ -1,3 +1,5 @@
+// join table for users and teams
+
 namespace appointly.Models;
 
 public class TeamMember

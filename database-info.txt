@@ -1,11 +1,11 @@
 NuGet Packages:
-  - dotnet add package Microsoft.EntityFrameworkCore
-  - dotnet add package Microsoft.EntityFrameworkCore.Sqlite
-  - dotnet add package Microsoft.EntityFrameworkCore.Tools
+  - dotnet add package Microsoft.EntityFrameworkCore --version 9.0.10
+  - dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 9.0.10
+  - dotnet add package Microsoft.EntityFrameworkCore.Tools --version 9.0.10
 
 Database Setup:
   1. Install EF CLI:
-    - dotnet tool install --global dotnet-ef
+    - dotnet tool install --global dotnet-ef --version 9.0.10
   2. Add Migration:
     - dotnet ef migrations add InitialCreate
   3. Update Database:
