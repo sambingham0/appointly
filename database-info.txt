@@ -1,0 +1,12 @@
+NuGet Packages:
+  - dotnet add package Microsoft.EntityFrameworkCore
+  - dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+  - dotnet add package Microsoft.EntityFrameworkCore.Tools
+
+Database Setup:
+  1. Install EF CLI:
+    - dotnet tool install --global dotnet-ef
+  2. Add Migration:
+    - dotnet ef migrations add InitialCreate
+  3. Update Database:
+    - dotnet ef database update
