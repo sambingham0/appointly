@@ -1,0 +1,14 @@
+After pulling the repo:
+
+Initialize local user-secrets in terminal:
+	dotnet user-secrets init
+
+Add the credentials shared by me:
+	dotnet user-secrets set "Authentication:Google:ClientId" "<client-id>"
+	dotnet user-secrets set "Authentication:Google:ClientSecret" "<client-secret>"
+
+Run the app:
+	dotnet run
+
+Sign in:
+	"Sign in with Google" in the navbar
