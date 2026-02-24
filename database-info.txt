@@ -1,0 +1,52 @@
+APPOINTLY – DATABASE SETUP
+
+NUGET PACKAGES - (You should NOT need to run these unless something breaks)
+  - dotnet add package Microsoft.EntityFrameworkCore --version 9.0.10
+  - dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 9.0.10
+
+SETUP
+  - Run inside the project folder:
+      - dotnet run
+
+HOW THE DATABASE WORKS
+  - The project uses SQLITE and the database file is named "appointly.db"
+  - It's created automatically the first time the app runs
+      - "db.Database.EnsureCreated();" in Project.cs builds the database 
+      schema directly from the current models
+
+IF SOMETHING BREAKS 
+  1. Stop the App
+  2. Delete the "appointly.db" file
+  3. Run "dotnet run"
+      - This will rebuild the database
+
+IF YOU CHANGE THE MODELS
+  * Add a property/new model, change relationship, etc. - basically any changes to 
+  the database design/structure
+  - After Making Changes:
+      1. Delete the "appointly.db" file
+      2. Run "dotnet run"
+          - The database will regenerate with the updated models
+
+IMPORTANT NOTES
+  - "appointly.db" file is in the gitignore right now. each of us will have our own
+    local database. this will help prevent conflicts during development. this means
+    that the structure of the database will be the same for everyone, but the data
+    being stored in it will be different
+
+NAVIGATION PROPERTIES
+  
+  // Navigation properties from Models/Team.cs
+  public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+  public ICollection<TeamMember> Members { get; set; } = new List<TeamMember>();
+
+  - Allow EF core to better understand table relationships
+  - Makes it easier to load related data using ".Include()" instead of writing out
+    manual joins
+  
+  Example:
+
+    var team = db.Teams
+    .Include(t => t.Appointments)
+    .Include(t => t.Members)
+    .First();
