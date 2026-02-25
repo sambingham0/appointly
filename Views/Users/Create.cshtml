@@ -1,0 +1,29 @@
+@model appointly.Models.User
+
+@{
+    ViewData["Title"] = "Create User";
+}
+
+<h1>Create User</h1>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div>
+        <label asp-for="Id"></label>
+        <input asp-for="Id" />
+    </div>
+
+    <div>
+        <label asp-for="DisplayName"></label>
+        <input asp-for="DisplayName" />
+    </div>
+
+    <div>
+        <label asp-for="Email"></label>
+        <input asp-for="Email" />
+    </div>
+
+    <button type="submit">Save</button>
+    <a asp-action="Index">Cancel</a>
+</form>

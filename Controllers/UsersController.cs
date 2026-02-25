@@ -10,8 +10,11 @@ using appointly.Models;
 using Microsoft.VisualBasic;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.InteropServices.Marshalling;
+using Microsoft.AspNetCore.Authorization;
 namespace appointly.Controllers;
 
+
+[Authorize]
 public class UsersController : Controller
 {
     private readonly AppointlyContext _db;
@@ -22,6 +25,7 @@ public class UsersController : Controller
     }
 
     //GET: /Users
+    //[Authorize] only certain roles should be able to access this
     public async Task<IActionResult> Index()
     {
         var users = await _db.Users.ToListAsync();
@@ -29,6 +33,8 @@ public class UsersController : Controller
     }
 
     //GET:/Users/Details/{id}
+    //[Authorize] only certain roles should be able to access this
+
     public async Task<IActionResult> Details(string? id)
     {
         if (string.IsNullOrWhiteSpace(id)) return NotFound();
@@ -44,11 +50,11 @@ public class UsersController : Controller
     }
 
     //GET: /Users/Create
+    //Do we want this? or only have users login with google?
     public IActionResult Create()
     {
         return View();
     }
-
     //POST: /Users/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
