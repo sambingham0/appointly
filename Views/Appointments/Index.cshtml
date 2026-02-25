@@ -1,0 +1,39 @@
+@model IEnumerable<appointly.Models.Appointment>
+
+<h1>Appointments</h1>
+
+<p>
+    <a asp-action="Create">Create New Appointment</a>
+</p>
+
+<table border="1" cellpadding="6">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Status</th>
+            <th>Created By</th>
+            <th>Team</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var a in Model)
+{
+        <tr>
+            <td>@a.Title</td>
+            <td>@a.StartTimeUtc</td>
+            <td>@a.EndTimeUtc</td>
+            <td>@a.Status</td>
+            <td>@a.CreatedByUser?.DisplayName</td>
+            <td>@a.Team?.Name</td>
+            <td>
+                <a asp-action="Details" asp-route-id="@a.Id">Details</a> |
+                <a asp-action="Edit" asp-route-id="@a.Id">Edit</a> |
+                <a asp-action="Delete" asp-route-id="@a.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

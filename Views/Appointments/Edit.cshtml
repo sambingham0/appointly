@@ -1,0 +1,46 @@
+@model appointly.Models.Appointment
+
+<h1>Edit Appointment</h1>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="Id" />
+
+    <div>
+        <label>Title</label>
+        <input asp-for="Title" />
+    </div>
+
+    <div>
+        <label>Description</label>
+        <input asp-for="Description" />
+    </div>
+
+    <div>
+        <label>Start (UTC)</label>
+        <input asp-for="StartTimeUtc" type="datetime-local" />
+    </div>
+
+    <div>
+        <label>End (UTC)</label>
+        <input asp-for="EndTimeUtc" type="datetime-local" />
+    </div>
+
+    <div>
+        <label>Status</label>
+        <select asp-for="Status"
+                asp-items="Html.GetEnumSelectList<appointly.Models.AppointmentStatus>()">
+        </select>
+    </div>
+
+    <div>
+        <label>Team</label>
+        <select asp-for="TeamId" asp-items="ViewBag.Teams">
+            <option value="">-- None --</option>
+        </select>
+    </div>
+
+    <button type="submit">Save</button>
+    <a asp-action="Index">Cancel</a>
+</form>
