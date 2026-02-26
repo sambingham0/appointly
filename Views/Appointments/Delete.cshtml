@@ -1,0 +1,14 @@
+@model appointly.Models.Appointment
+
+<h1>Delete Appointment</h1>
+
+<p>Are you sure you want to delete this appointment?</p>
+
+<p><strong>@Model.Title</strong></p>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button type="submit">Delete</button>
+    <a asp-action="Index">Cancel</a>
+</form>

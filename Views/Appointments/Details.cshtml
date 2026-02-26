@@ -1,0 +1,67 @@
+@model appointly.Models.Appointment
+
+<h1>Appointment Details</h1>
+
+<dl>
+    <dt>Title</dt>
+    <dd>@Model.Title</dd>
+
+    <dt>Description</dt>
+    <dd>@Model.Description</dd>
+
+    <dt>Start</dt>
+    <dd>@Model.StartTimeUtc</dd>
+
+    <dt>End</dt>
+    <dd>@Model.EndTimeUtc</dd>
+
+    <dt>Status</dt>
+    <dd>@Model.Status</dd>
+
+    <dt>Created By</dt>
+    <dd>@Model.CreatedByUser?.DisplayName</dd>
+
+    <dt>Team</dt>
+    <dd>@Model.Team?.Name</dd>
+</dl>
+
+<hr />
+
+<h3>Participants</h3>
+
+<ul>
+@foreach (var p in Model.Participants)
+{
+    <li>
+        @p.User?.DisplayName
+        <form asp-controller="AppointmentParticipants"
+              asp-action="Remove"
+              method="post"
+              style="display:inline;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="appointmentId" value="@Model.Id" />
+            <input type="hidden" name="userId" value="@p.UserId" />
+            <button type="submit">Remove</button>
+        </form>
+    </li>
+}
+</ul>
+
+<h4>Add Participant</h4>
+
+<form asp-controller="AppointmentParticipants"
+      asp-action="Add"
+      method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="appointmentId" value="@Model.Id" />
+
+    <select name="userId" asp-items="ViewBag.AllUsers">
+    </select>
+
+    <button type="submit">Add</button>
+</form>
+
+<br />
+
+<a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+<a asp-action="Index">Back</a>

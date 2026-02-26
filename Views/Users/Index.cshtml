@@ -1,0 +1,37 @@
+@model IEnumerable<appointly.Models.User>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<h1>Users</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Display Name</th>
+            <th>Email</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var u in Model)
+{
+        <tr>
+            <td>@u.Id</td>
+            <td>@u.DisplayName</td>
+            <td>@u.Email</td>
+            <td>
+                <a asp-action="Details" asp-route-id="@u.Id">Details</a> |
+                <a asp-action="Edit" asp-route-id="@u.Id">Edit</a> |
+                <a asp-action="Delete" asp-route-id="@u.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

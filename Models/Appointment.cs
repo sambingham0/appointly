@@ -1,4 +1,5 @@
 namespace appointly.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 public class Appointment
 {
@@ -26,10 +27,13 @@ public class Appointment
     public DateTime UpdatedAtUtc { get; set; }
 
     // Navigation properties 
+    [ValidateNever]
     public User CreatedByUser { get; set; } = null!;
+    [ValidateNever]
     public Team? Team { get; set; }
 
     // Users invited to this appointment
+    [ValidateNever]
     public ICollection<AppointmentParticipant> Participants { get; set; } = new List<AppointmentParticipant>();
 }
 

@@ -1,0 +1,23 @@
+@model appointly.Models.User
+
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<h1>User Details</h1>
+
+<dl>
+    <dt>Id</dt>
+    <dd>@Model.Id</dd>
+
+    <dt>Display Name</dt>
+    <dd>@Model.DisplayName</dd>
+
+    <dt>Email</dt>
+    <dd>@Model.Email</dd>
+</dl>
+
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Index">Back</a>
+</p>
