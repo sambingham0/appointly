@@ -62,11 +62,14 @@ public class AppointmentsController : Controller
 
         if (appointment == null) return NotFound();
 
-        ViewBag.AllUsers = new SelectList(
-            await _db.Users.OrderBy(u => u.DisplayName).ToListAsync(),
-            "Id",
-            "DisplayName"
-        );
+        var currentParticipantIds = appointment.Participants.Select(p => p.UserId).ToHashSet();
+        
+        var potentialParticipants = await _db.Users
+            .Where(u => !currentParticipantIds.Contains(u.Id))
+            .OrderBy(u => u.DisplayName)
+            .ToListAsync();
+
+        ViewBag.PotentialParticipants = new SelectList(potentialParticipants, "Id", "DisplayName");
 
         return View(appointment);
     }

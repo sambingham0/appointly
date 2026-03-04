@@ -117,6 +117,10 @@ public class UsersController : Controller
         var appointmentLinks = _db.AppointmentParticipants.Where(ap => ap.UserId == id);
         _db.AppointmentParticipants.RemoveRange(appointmentLinks);
 
+        // Remove appointments created by this user to avoid constraints
+        var createdAppointments = _db.Appointments.Where(a => a.CreatedByUserId == id);
+        _db.Appointments.RemoveRange(createdAppointments);
+
         var user = await _db.Users.FindAsync(id);
         if (user != null)
         {
