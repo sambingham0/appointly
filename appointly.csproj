@@ -13,4 +13,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.10" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="appointly.tests\**\*.cs" />
+    <Content Remove="appointly.tests\**" />
+    <EmbeddedResource Remove="appointly.tests\**" />
+    <None Remove="appointly.tests\**" />
+  </ItemGroup>
+
 </Project>
