@@ -60,7 +60,7 @@ public class TeamsController : Controller
         {
             _db.Add(team);
             await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details), new { id = team.Id });
         }
         return View(team);
     }

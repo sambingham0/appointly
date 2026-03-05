@@ -111,7 +111,7 @@ public class AppointmentsController : Controller
         _db.Appointments.Add(appointment);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Details), new { id = appointment.Id });
     }
 
     // =========================
