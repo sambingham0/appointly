@@ -17,6 +17,43 @@
     <dd>@Model.Email</dd>
 </dl>
 
+<hr />
+
+<h3>Teams</h3>
+@if (Model.TeamMemberships.Any())
+{
+    <ul>
+        @foreach (var tm in Model.TeamMemberships)
+        {
+            <li><a asp-controller="Teams" asp-action="Details" asp-route-id="@tm.TeamId">@tm.Team?.Name</a></li>
+        }
+    </ul>
+}
+else
+{
+    <p>No teams.</p>
+}
+
+<h3>Participating Appointments</h3>
+@if (Model.AppointmentParticipations.Any())
+{
+    <ul>
+        @foreach (var ap in Model.AppointmentParticipations)
+        {
+            <li>
+                <a asp-controller="Appointments" asp-action="Details" asp-route-id="@ap.AppointmentId">
+                    @ap.Appointment?.Title
+                </a>
+                (@ap.Appointment?.StartTimeUtc.ToString("g"))
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No appointments.</p>
+}
+
 <p>
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
     <a asp-action="Index">Back</a>
