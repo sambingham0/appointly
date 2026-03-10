@@ -10,21 +10,25 @@
     <div>
         <label>Title</label>
         <input asp-for="Title" />
+        <span asp-validation-for="Title" class="text-danger"></span>
     </div>
 
     <div>
         <label>Description</label>
-        <input asp-for="Description" />
+        <input asp-for="Description" maxlength="500" />
+        <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
     <div>
         <label>Start (UTC)</label>
         <input asp-for="StartTimeUtc" type="datetime-local" />
+        <span asp-validation-for="StartTimeUtc" class="text-danger"></span>
     </div>
 
     <div>
         <label>End (UTC)</label>
         <input asp-for="EndTimeUtc" type="datetime-local" />
+        <span asp-validation-for="EndTimeUtc" class="text-danger"></span>
     </div>
 
     <div>
@@ -44,3 +48,7 @@
     <button type="submit">Save</button>
     <a asp-action="Index">Cancel</a>
 </form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
