@@ -77,10 +77,17 @@ public class AppointmentsController : Controller
     // =========================
     // CREATE (GET)
     // =========================
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(string? startTime)
     {
-        await PopulateDropdownsAsync();
-        return View();
+         var model = new Appointment();
+    
+        if (!string.IsNullOrEmpty(startTime) && DateTime.TryParse(startTime, out var parsed))
+        {
+            model.StartTimeUtc = parsed.ToUniversalTime();
+            model.EndTimeUtc = parsed.AddHours(1).ToUniversalTime();
+        }
+
+        return View(model);
     }
 
     // =========================
@@ -111,7 +118,9 @@ public class AppointmentsController : Controller
         _db.Appointments.Add(appointment);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Details), new { id = appointment.Id });
+        // return RedirectToAction(nameof(Details), new { id = appointment.Id });
+
+        return RedirectToAction(nameof(Index));
     }
 
     // =========================
@@ -163,7 +172,7 @@ public class AppointmentsController : Controller
 
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Details), new { id });
+        return RedirectToAction(nameof(Index));
     }
 
     // =========================
@@ -200,7 +209,7 @@ public class AppointmentsController : Controller
         _db.Appointments.Remove(appointment);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
+       return RedirectToAction(nameof(Index));
     }
 
     // =========================
@@ -221,5 +230,20 @@ public class AppointmentsController : Controller
             "Name",
             selectedTeamId
         );
+    }
+
+    // =========================
+    // JSON endpoint for calendar.io 
+    // =========================
+    public JsonResult GetAppointments()
+    {
+        var appointments = _db.Appointments.Select(a => new {
+            id = a.Id,
+            title = a.Title,
+            start = a.StartTimeUtc.ToString("o"),
+            end = a.EndTimeUtc.ToString("o")
+        });
+
+        return Json(appointments);
     }
 }
