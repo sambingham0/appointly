@@ -47,6 +47,24 @@ public class AppointmentsController : Controller
     }
 
     // =========================
+    // INDEX BY USER (personal view)
+    // =========================
+    public async Task<IActionResult> AppointmentsByUser()
+    {
+        var userId = CurrentUserId();
+
+        var appointments = await _db.Appointments
+            .Include(a => a.CreatedByUser)
+            .Include(a => a.Team)
+            .Where(a => a.CreatedByUserId == userId ||
+                        a.Participants.Any(p => p.UserId == userId))
+            .OrderByDescending(a => a.StartTimeUtc)
+            .ToListAsync();
+
+        return View(appointments);
+    }
+
+    // =========================
     // DETAILS (includes participants management)
     // =========================
     public async Task<IActionResult> Details(int? id)
@@ -63,7 +81,7 @@ public class AppointmentsController : Controller
         if (appointment == null) return NotFound();
 
         var currentParticipantIds = appointment.Participants.Select(p => p.UserId).ToHashSet();
-        
+
         var potentialParticipants = await _db.Users
             .Where(u => !currentParticipantIds.Contains(u.Id))
             .OrderBy(u => u.DisplayName)
@@ -77,10 +95,17 @@ public class AppointmentsController : Controller
     // =========================
     // CREATE (GET)
     // =========================
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(string? startTime)
     {
-        await PopulateDropdownsAsync();
-        return View();
+        var model = new Appointment();
+
+        if (!string.IsNullOrEmpty(startTime) && DateTime.TryParse(startTime, out var parsed))
+        {
+            model.StartTimeUtc = parsed.ToUniversalTime();
+            model.EndTimeUtc = parsed.AddHours(1).ToUniversalTime();
+        }
+
+        return View(model);
     }
 
     // =========================
@@ -111,7 +136,9 @@ public class AppointmentsController : Controller
         _db.Appointments.Add(appointment);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Details), new { id = appointment.Id });
+        // return RedirectToAction(nameof(Details), new { id = appointment.Id });
+
+        return RedirectToAction(nameof(Index));
     }
 
     // =========================
@@ -163,7 +190,7 @@ public class AppointmentsController : Controller
 
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Details), new { id });
+        return RedirectToAction(nameof(Index));
     }
 
     // =========================
@@ -221,5 +248,21 @@ public class AppointmentsController : Controller
             "Name",
             selectedTeamId
         );
+    }
+
+    // =========================
+    // JSON endpoint for calendar.io 
+    // =========================
+    public JsonResult GetAppointments()
+    {
+        var appointments = _db.Appointments.Select(a => new
+        {
+            id = a.Id,
+            title = a.Title,
+            start = a.StartTimeUtc.ToString("o"),
+            end = a.EndTimeUtc.ToString("o")
+        });
+
+        return Json(appointments);
     }
 }

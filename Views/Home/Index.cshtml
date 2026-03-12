@@ -1,11 +1,88 @@
-﻿@{
+﻿@using appointly.Models
+@{
     ViewData["Title"] = "Appointly";
+    var todayAppts = ViewBag.TodayAppointments as List<Appointment> ?? new List<Appointment>();
 }
 
-<h1>Appointly</h1>
 
-<ul>
-    <li><a asp-controller="Users" asp-action="Index">Users</a></li>
-    <li><a asp-controller="Teams" asp-action="Index">Teams</a></li>
-    <li><a asp-controller="Appointments" asp-action="Index">Appointments</a></li>
-</ul>
+<!-- appts summary -->
+<div class="container-fluid px-4 pt-4 pb-2">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+       <div class="mb-3">
+            <div class="text-muted small">@DateTime.Now.ToString("dddd")</div>
+            <div class="fw-bold" style="font-size: 4rem; line-height: 1;">@DateTime.Now.ToString("dd")</div>
+            <div class="fw-semibold text-uppercase" style="letter-spacing: 2px;">@DateTime.Now.ToString("MMMM")</div>
+        </div>
+
+        @* <span >@todayAppts.Count appt @(todayAppts.Count != 1 ? "s." : "") today</span> *@
+    </div>
+    
+
+    <div>
+        <p class="text-muted"> @todayAppts.Count appt@(todayAppts.Count != 1 ? "s" : "") today</p>    
+    
+    @if (todayAppts.Any())
+    {
+        <div class="d-flex gap-2 flex-wrap mb-3">
+            @foreach (var a in todayAppts)
+            {
+                <a href="@Url.Action("Details", "Appointments", new { id = a.Id })"
+                   class="card text-decoration-none text-dark shadow-sm"
+                   style="min-width: 180px; max-width: 220px;">
+                    <div class="card-body py-2 px-3">
+                        <div class="fw-semibold">@a.Title</div>
+                        <div class="text-muted small">
+                            @a.StartTimeUtc.ToLocalTime().ToString("h:mm tt") — @a.EndTimeUtc.ToLocalTime().ToString("h:mm tt")
+                        </div>
+                        @if (a.Team != null)
+                        {
+                            <span class="badge bg-secondary mt-1">@a.Team.Name</span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted mb-3">No appointments today.</p>
+    }
+    </div>
+
+</div>
+
+<hr class="mt-0">
+
+<div style="position: relative;">
+    <a href="@Url.Action("Create", "Appointments")"
+       class="btn btn-dark rounded-circle shadow position-fixed d-flex align-items-center justify-content-center"
+       style="width: 56px; height: 56px; bottom: 32px; right: 32px; font-size: 24px; z-index: 9999;"
+       title="New Appointment">
+        <i class="bi bi-plus-lg"></i>
+    </a>
+
+    <div id="calendar"></div>
+</div>
+
+
+@section Scripts {
+    <script>
+
+        var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'dayGridMonth',
+        events: '@Url.Action("GetAppointments", "Appointments")',
+
+        // Click empty date to go to Create with date pre-filled
+        dateClick: function(info) {
+            window.location.href = '@Url.Action("Create", "Appointments")?startTime=' + info.dateStr;
+        },
+
+        // Click existing event to go to go to Details
+        eventClick: function(info) {
+            window.location.href = '@Url.Action("Details", "Appointments")/' + info.event.id;
+        }
+        });
+
+        calendar.render();
+    </script>
+}
