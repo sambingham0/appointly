@@ -47,6 +47,24 @@ public class AppointmentsController : Controller
     }
 
     // =========================
+    // INDEX BY USER (personal view)
+    // =========================
+    public async Task<IActionResult> AppointmentsByUser()
+    {
+        var userId = CurrentUserId();
+
+        var appointments = await _db.Appointments
+            .Include(a => a.CreatedByUser)
+            .Include(a => a.Team)
+            .Where(a => a.CreatedByUserId == userId ||
+                        a.Participants.Any(p => p.UserId == userId))
+            .OrderByDescending(a => a.StartTimeUtc)
+            .ToListAsync();
+
+        return View(appointments);
+    }
+
+    // =========================
     // DETAILS (includes participants management)
     // =========================
     public async Task<IActionResult> Details(int? id)
@@ -63,7 +81,7 @@ public class AppointmentsController : Controller
         if (appointment == null) return NotFound();
 
         var currentParticipantIds = appointment.Participants.Select(p => p.UserId).ToHashSet();
-        
+
         var potentialParticipants = await _db.Users
             .Where(u => !currentParticipantIds.Contains(u.Id))
             .OrderBy(u => u.DisplayName)
@@ -79,8 +97,8 @@ public class AppointmentsController : Controller
     // =========================
     public async Task<IActionResult> Create(string? startTime)
     {
-         var model = new Appointment();
-    
+        var model = new Appointment();
+
         if (!string.IsNullOrEmpty(startTime) && DateTime.TryParse(startTime, out var parsed))
         {
             model.StartTimeUtc = parsed.ToUniversalTime();
@@ -209,7 +227,7 @@ public class AppointmentsController : Controller
         _db.Appointments.Remove(appointment);
         await _db.SaveChangesAsync();
 
-       return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index));
     }
 
     // =========================
@@ -237,7 +255,8 @@ public class AppointmentsController : Controller
     // =========================
     public JsonResult GetAppointments()
     {
-        var appointments = _db.Appointments.Select(a => new {
+        var appointments = _db.Appointments.Select(a => new
+        {
             id = a.Id,
             title = a.Title,
             start = a.StartTimeUtc.ToString("o"),
