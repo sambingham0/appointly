@@ -6,32 +6,41 @@
 
 
 <!-- appts summary -->
-<div class="container-fluid px-4 pt-4 pb-2">
-    <div class="d-flex align-items-center justify-content-between mb-2">
-       <div class="mb-3">
-            <div class="text-muted small">@DateTime.Now.ToString("dddd")</div>
-            <div class="fw-bold" style="font-size: 4rem; line-height: 1;">@DateTime.Now.ToString("dd")</div>
-            <div class="fw-semibold text-uppercase" style="letter-spacing: 2px;">@DateTime.Now.ToString("MMMM")</div>
-        </div>
+<div class="px-4 pt-4 pb-2 d-flex flex-column flex-md-row justify-content-between gap-10 mb-3">
 
-        @* <span >@todayAppts.Count appt @(todayAppts.Count != 1 ? "s." : "") today</span> *@
+    <div class="d-flex flex-column align-items-start mb-4 me-5 ">
+
+
+            <div style="color: var(--appt-muted); font-size: 0.85rem;">@DateTime.Now.ToString("dddd")</div>
+            <div class="fw-bold" style="font-size: 5rem; line-height: 1; color: var(--appt-dark);">@DateTime.Now.ToString("dd")</div>
+            <div class="fw-bold text-uppercase" style="font-size: 1.4rem; letter-spacing: 3px; color: var(--appt-dark);">@DateTime.Now.ToString("MMMM")</div>
+
+
     </div>
     
 
     <div>
-        <p class="text-muted"> @todayAppts.Count appt@(todayAppts.Count != 1 ? "s" : "") today</p>    
+        
+    <p class="text-muted text-end"> @todayAppts.Count appt@(todayAppts.Count != 1 ? "s" : "") today</p>    
+        
     
     @if (todayAppts.Any())
     {
-        <div class="d-flex gap-2 flex-wrap mb-3">
+        <div class="d-flex gap-2 flex-wrap mb-3 justify-content-end">
+            @{
+                var colors = new[] { "#C0513A", "#7B6FA0", "#2B2B2B", "#9FC688" };
+                int i = 0;
+            }
             @foreach (var a in todayAppts)
             {
+                var color = colors[i % colors.Length];
+                i++;
                 <a href="@Url.Action("Details", "Appointments", new { id = a.Id })"
-                   class="card text-decoration-none text-dark shadow-sm"
-                   style="min-width: 180px; max-width: 220px;">
-                    <div class="card-body py-2 px-3">
-                        <div class="fw-semibold">@a.Title</div>
-                        <div class="text-muted small">
+                    class="card text-decoration-none text-white border-0 rounded-4"
+                    style="min-width: 180px; background-color: @color;">
+                    <div class="card-body py-3 px-3">
+                        <div class="fw-bold fs-6">@a.Title</div>
+                         <div class="small mt-1" style="opacity: 0.75;">
                             @a.StartTimeUtc.ToLocalTime().ToString("h:mm tt") — @a.EndTimeUtc.ToLocalTime().ToString("h:mm tt")
                         </div>
                         @if (a.Team != null)
@@ -61,7 +70,9 @@
         <i class="bi bi-plus-lg"></i>
     </a>
 
-    <div id="calendar"></div>
+    <div class="card border-0 rounded-4 shadow-sm p-3" style="background-color: white;">
+        <div id="calendar"></div>
+    </div>
 </div>
 
 
