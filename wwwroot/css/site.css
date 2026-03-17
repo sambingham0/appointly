@@ -1,3 +1,38 @@
+:root {
+    --appt-red: #C0513A;
+    --appt-purple: #7B6FA0;
+    --appt-dark: #2B2B2B;
+    --appt-cream: #F5F2EE;
+    --appt-muted: #9A9189;
+    --appt-green: #9FC688;
+}
+
+/*to override fullcalendari.io css*/
+.fc .fc-daygrid-day-number,
+.fc .fc-col-header-cell-cushion {
+    color: #2B2B2B;
+    text-decoration: none;
+}
+.fc-daygrid-event-dot{
+      border: (8px/ 2) solid #2B2B2B ;
+
+}
+
+.fc .fc-event-title,
+.fc .fc-daygrid-event {
+    color: white;
+}
+
+
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: rgba(192, 81, 58, 0.1);
+}
+
+
+.fc .fc-daygrid-event {
+    background-color: #C0513A;
+    border-color: #C0513A;
+}
 html {
   font-size: 14px;
 }
@@ -19,7 +54,17 @@ html {
 
 body {
   margin-bottom: 60px;
+  font-family: 'Segoe UI', system-ui;
+  /* background-color: var(--appt-cream); */
 }
+.logo{
+  font-family: 'Happy Monkey', system-ui;
+}
+  
+footer{
+  background-color: white;
+}
+
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);

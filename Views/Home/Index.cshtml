@@ -1,11 +1,99 @@
-﻿@{
+﻿@using appointly.Models
+@{
     ViewData["Title"] = "Appointly";
+    var todayAppts = ViewBag.TodayAppointments as List<Appointment> ?? new List<Appointment>();
 }
 
-<h1>Appointly</h1>
 
-<ul>
-    <li><a asp-controller="Users" asp-action="Index">Users</a></li>
-    <li><a asp-controller="Teams" asp-action="Index">Teams</a></li>
-    <li><a asp-controller="Appointments" asp-action="Index">Appointments</a></li>
-</ul>
+<!-- appts summary -->
+<div class="px-4 pt-4 pb-2 d-flex flex-column flex-md-row justify-content-between gap-10 mb-3">
+
+    <div class="d-flex flex-column align-items-start mb-4 me-5 ">
+
+
+            <div style="color: var(--appt-muted); font-size: 0.85rem;">@DateTime.Now.ToString("dddd")</div>
+            <div class="fw-bold" style="font-size: 5rem; line-height: 1; color: var(--appt-dark);">@DateTime.Now.ToString("dd")</div>
+            <div class="fw-bold text-uppercase" style="font-size: 1.4rem; letter-spacing: 3px; color: var(--appt-dark);">@DateTime.Now.ToString("MMMM")</div>
+
+
+    </div>
+    
+
+    <div>
+        
+    <p class="text-muted text-end"> @todayAppts.Count appt@(todayAppts.Count != 1 ? "s" : "") today</p>    
+        
+    
+    @if (todayAppts.Any())
+    {
+        <div class="d-flex gap-2 flex-wrap mb-3 justify-content-end">
+            @{
+                var colors = new[] { "#C0513A", "#7B6FA0", "#2B2B2B", "#9FC688" };
+                int i = 0;
+            }
+            @foreach (var a in todayAppts)
+            {
+                var color = colors[i % colors.Length];
+                i++;
+                <a href="@Url.Action("Details", "Appointments", new { id = a.Id })"
+                    class="card text-decoration-none text-white border-0 rounded-4"
+                    style="min-width: 180px; background-color: @color;">
+                    <div class="card-body py-3 px-3">
+                        <div class="fw-bold fs-6">@a.Title</div>
+                         <div class="small mt-1" style="opacity: 0.75;">
+                            @a.StartTimeUtc.ToLocalTime().ToString("h:mm tt") — @a.EndTimeUtc.ToLocalTime().ToString("h:mm tt")
+                        </div>
+                        @if (a.Team != null)
+                        {
+                            <span class="badge bg-secondary mt-1">@a.Team.Name</span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted mb-3">No appointments today.</p>
+    }
+    </div>
+
+</div>
+
+<hr class="mt-0">
+
+<div style="position: relative;">
+    <a href="@Url.Action("Create", "Appointments")"
+       class="btn btn-dark rounded-circle shadow position-fixed d-flex align-items-center justify-content-center"
+       style="width: 56px; height: 56px; bottom: 32px; right: 32px; font-size: 24px; z-index: 9999;"
+       title="New Appointment">
+        <i class="bi bi-plus-lg"></i>
+    </a>
+
+    <div class="card border-0 rounded-4 shadow-sm p-3" style="background-color: white;">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+
+        var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'dayGridMonth',
+        events: '@Url.Action("GetAppointments", "Appointments")',
+
+        // Click empty date to go to Create with date pre-filled
+        dateClick: function(info) {
+            window.location.href = '@Url.Action("Create", "Appointments")?startTime=' + info.dateStr;
+        },
+
+        // Click existing event to go to go to Details
+        eventClick: function(info) {
+            window.location.href = '@Url.Action("Details", "Appointments")/' + info.event.id;
+        }
+        });
+
+        calendar.render();
+    </script>
+}

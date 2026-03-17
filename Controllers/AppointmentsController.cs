@@ -5,12 +5,12 @@
 //Edit(id) - edit existing appointment
 //Delete(id) - delete appointment
 
-using appointly.Extensions;
 using appointly.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace appointly.Controllers;
 
@@ -24,29 +24,42 @@ public class AppointmentsController : Controller
         _db = db;
     }
 
+    //might need to update this 
+    private string? CurrentUserId()
+    {
+        var providerUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrWhiteSpace(providerUserId)) return null;
+        return $"google:{providerUserId}";
+    }
+
     // =========================
     // INDEX
     // =========================
     public async Task<IActionResult> Index()
     {
-        var currentUserId = User.GetAppointlyUserId();
         var appointments = await _db.Appointments
             .Include(a => a.CreatedByUser)
             .Include(a => a.Team)
             .OrderByDescending(a => a.StartTimeUtc)
             .ToListAsync();
 
-        var adminTeamIds = string.IsNullOrWhiteSpace(currentUserId)
-            ? new HashSet<int>()
-            : await _db.TeamMembers
-                .Where(tm => tm.UserId == currentUserId && tm.Role == TeamRole.Admin)
-                .Select(tm => tm.TeamId)
-                .ToHashSetAsync();
+        return View(appointments);
+    }
 
-        ViewBag.ManageableAppointmentIds = appointments
-            .Where(a => a.CreatedByUserId == currentUserId || (a.TeamId.HasValue && adminTeamIds.Contains(a.TeamId.Value)))
-            .Select(a => a.Id)
-            .ToHashSet();
+    // =========================
+    // INDEX BY USER (personal view)
+    // =========================
+    public async Task<IActionResult> AppointmentsByUser()
+    {
+        var userId = CurrentUserId();
+
+        var appointments = await _db.Appointments
+            .Include(a => a.CreatedByUser)
+            .Include(a => a.Team)
+            .Where(a => a.CreatedByUserId == userId ||
+                        a.Participants.Any(p => p.UserId == userId))
+            .OrderByDescending(a => a.StartTimeUtc)
+            .ToListAsync();
 
         return View(appointments);
     }
@@ -67,12 +80,8 @@ public class AppointmentsController : Controller
 
         if (appointment == null) return NotFound();
 
-        var currentUserId = User.GetAppointlyUserId();
-        ViewBag.CanManageAppointment = !string.IsNullOrWhiteSpace(currentUserId)
-            && await _db.CanManageAppointmentAsync(appointment.Id, currentUserId);
-
         var currentParticipantIds = appointment.Participants.Select(p => p.UserId).ToHashSet();
-        
+
         var potentialParticipants = await _db.Users
             .Where(u => !currentParticipantIds.Contains(u.Id))
             .OrderBy(u => u.DisplayName)
@@ -86,10 +95,19 @@ public class AppointmentsController : Controller
     // =========================
     // CREATE (GET)
     // =========================
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(string? startTime)
     {
-        await PopulateDropdownsAsync(User.GetAppointlyUserId());
-        return View();
+        var model = new Appointment();
+
+        if (!string.IsNullOrEmpty(startTime) && DateTime.TryParse(startTime, out var parsed))
+        {
+            model.StartTimeUtc = parsed.ToUniversalTime();
+            model.EndTimeUtc = parsed.AddHours(1).ToUniversalTime();
+        }
+
+        var currentUserId = CurrentUserId();
+        await PopulateDropdownsAsync(currentUserId);
+        return View(model);
     }
 
     // =========================
@@ -99,7 +117,7 @@ public class AppointmentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Appointment appointment)
     {
-        var currentUserId = User.GetAppointlyUserId();
+        var currentUserId = CurrentUserId();
         if (string.IsNullOrWhiteSpace(currentUserId)) return Forbid();
 
         if (appointment.EndTimeUtc <= appointment.StartTimeUtc)
@@ -107,14 +125,9 @@ public class AppointmentsController : Controller
             ModelState.AddModelError("", "End time must be after start time.");
         }
 
-        if (appointment.TeamId.HasValue && !await _db.IsTeamAdminAsync(appointment.TeamId.Value, currentUserId))
-        {
-            ModelState.AddModelError(nameof(appointment.TeamId), "You must be a team admin to create an appointment for that team.");
-        }
-
         if (!ModelState.IsValid)
         {
-            await PopulateDropdownsAsync(currentUserId, appointment.TeamId);
+            await PopulateDropdownsAsync(appointment.CreatedByUserId, appointment.TeamId);
             return View(appointment);
         }
 
@@ -125,7 +138,9 @@ public class AppointmentsController : Controller
         _db.Appointments.Add(appointment);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Details), new { id = appointment.Id });
+        // return RedirectToAction(nameof(Details), new { id = appointment.Id });
+
+        return RedirectToAction(nameof(Index));
     }
 
     // =========================
@@ -135,16 +150,10 @@ public class AppointmentsController : Controller
     {
         if (id == null) return NotFound();
 
-        var currentUserId = User.GetAppointlyUserId();
-        if (string.IsNullOrWhiteSpace(currentUserId) || !await _db.CanManageAppointmentAsync(id.Value, currentUserId))
-        {
-            return Forbid();
-        }
-
         var appointment = await _db.Appointments.FindAsync(id.Value);
         if (appointment == null) return NotFound();
 
-        await PopulateDropdownsAsync(currentUserId, appointment.TeamId, appointment.TeamId);
+        await PopulateDropdownsAsync(appointment.CreatedByUserId, appointment.TeamId);
         return View(appointment);
     }
 
@@ -157,12 +166,6 @@ public class AppointmentsController : Controller
     {
         if (id != formModel.Id) return NotFound();
 
-        var currentUserId = User.GetAppointlyUserId();
-        if (string.IsNullOrWhiteSpace(currentUserId) || !await _db.CanManageAppointmentAsync(id, currentUserId))
-        {
-            return Forbid();
-        }
-
         var appointment = await _db.Appointments.FindAsync(id);
         if (appointment == null) return NotFound();
 
@@ -171,16 +174,9 @@ public class AppointmentsController : Controller
             ModelState.AddModelError("", "End time must be after start time.");
         }
 
-        if (formModel.TeamId != appointment.TeamId &&
-            formModel.TeamId.HasValue &&
-            !await _db.IsTeamAdminAsync(formModel.TeamId.Value, currentUserId))
-        {
-            ModelState.AddModelError(nameof(formModel.TeamId), "You must be a team admin to assign this appointment to that team.");
-        }
-
         if (!ModelState.IsValid)
         {
-            await PopulateDropdownsAsync(currentUserId, formModel.TeamId, appointment.TeamId);
+            await PopulateDropdownsAsync(formModel.CreatedByUserId, formModel.TeamId);
             return View(formModel);
         }
 
@@ -196,7 +192,7 @@ public class AppointmentsController : Controller
 
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Details), new { id });
+        return RedirectToAction(nameof(Index));
     }
 
     // =========================
@@ -205,12 +201,6 @@ public class AppointmentsController : Controller
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
-
-        var currentUserId = User.GetAppointlyUserId();
-        if (string.IsNullOrWhiteSpace(currentUserId) || !await _db.CanManageAppointmentAsync(id.Value, currentUserId))
-        {
-            return Forbid();
-        }
 
         var appointment = await _db.Appointments
             .Include(a => a.CreatedByUser)
@@ -229,12 +219,6 @@ public class AppointmentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var currentUserId = User.GetAppointlyUserId();
-        if (string.IsNullOrWhiteSpace(currentUserId) || !await _db.CanManageAppointmentAsync(id, currentUserId))
-        {
-            return Forbid();
-        }
-
         var appointment = await _db.Appointments.FindAsync(id);
         if (appointment == null) return NotFound();
 
@@ -251,33 +235,36 @@ public class AppointmentsController : Controller
     // =========================
     // Dropdown population
     // =========================
-    private async Task PopulateDropdownsAsync(string? currentUserId, int? selectedTeamId = null, int? includeTeamId = null)
+    private async Task PopulateDropdownsAsync(string? selectedUserId = null, int? selectedTeamId = null)
     {
-        List<Team> teams = [];
-
-        if (!string.IsNullOrWhiteSpace(currentUserId))
-        {
-            teams = await _db.Teams
-                .Where(t => t.Members.Any(tm => tm.UserId == currentUserId && tm.Role == TeamRole.Admin))
-                .OrderBy(t => t.Name)
-                .ToListAsync();
-        }
-
-        if (includeTeamId.HasValue && teams.All(t => t.Id != includeTeamId.Value))
-        {
-            var existingTeam = await _db.Teams.FindAsync(includeTeamId.Value);
-            if (existingTeam != null)
-            {
-                teams.Add(existingTeam);
-                teams = teams.OrderBy(t => t.Name).ToList();
-            }
-        }
+        ViewBag.Users = new SelectList(
+            await _db.Users.OrderBy(u => u.DisplayName).ToListAsync(),
+            "Id",
+            "DisplayName",
+            selectedUserId
+        );
 
         ViewBag.Teams = new SelectList(
-            teams,
+            await _db.Teams.OrderBy(t => t.Name).ToListAsync(),
             "Id",
             "Name",
             selectedTeamId
         );
+    }
+
+    // =========================
+    // JSON endpoint for calendar.io 
+    // =========================
+    public JsonResult GetAppointments()
+    {
+        var appointments = _db.Appointments.Select(a => new
+        {
+            id = a.Id,
+            title = a.Title,
+            start = a.StartTimeUtc.ToString("o"),
+            end = a.EndTimeUtc.ToString("o")
+        });
+
+        return Json(appointments);
     }
 }

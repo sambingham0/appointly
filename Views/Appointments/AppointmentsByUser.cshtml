@@ -1,9 +1,5 @@
 @model IEnumerable<appointly.Models.Appointment>
 
-@{
-    var manageableAppointmentIds = ViewBag.ManageableAppointmentIds as HashSet<int> ?? new HashSet<int>();
-}
-
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>My Appointments</h2>
@@ -42,11 +38,8 @@
                         <td>@(a.Team?.Name ?? "-")</td>
                         <td>
                             <a href="@Url.Action("Details", "Appointments", new { id = a.Id })" class="btn btn-sm btn-outline-dark">View</a>
-                            @if (manageableAppointmentIds.Contains(a.Id))
-                            {
-                                <a href="@Url.Action("Edit", "Appointments", new { id = a.Id })" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                <a href="@Url.Action("Delete", "Appointments", new { id = a.Id })" class="btn btn-sm btn-outline-danger">Delete</a>
-                            }
+                            <a href="@Url.Action("Edit", "Appointments", new { id = a.Id })" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a href="@Url.Action("Delete", "Appointments", new { id = a.Id })" class="btn btn-sm btn-outline-danger">Delete</a>
                         </td>
                     </tr>
                 }
