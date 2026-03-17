@@ -1,5 +1,9 @@
 @model appointly.Models.Appointment
 
+@{
+    var canManageAppointment = ViewBag.CanManageAppointment is bool value && value;
+}
+
 <h1>Appointment Details</h1>
 
 <dl>
@@ -34,34 +38,44 @@
 {
     <li>
         @p.User?.DisplayName
-        <form asp-controller="AppointmentParticipants"
-              asp-action="Remove"
-              method="post"
-              style="display:inline;">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="appointmentId" value="@Model.Id" />
-            <input type="hidden" name="userId" value="@p.UserId" />
-            <button type="submit">Remove</button>
-        </form>
+        @if (canManageAppointment)
+        {
+            <form asp-controller="AppointmentParticipants"
+                  asp-action="Remove"
+                  method="post"
+                  style="display:inline;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="appointmentId" value="@Model.Id" />
+                <input type="hidden" name="userId" value="@p.UserId" />
+                <button type="submit">Remove</button>
+            </form>
+        }
     </li>
 }
 </ul>
 
-<h4>Add Participant</h4>
+@if (canManageAppointment)
+{
+    <h4>Add Participant</h4>
 
-<form asp-controller="AppointmentParticipants"
-      asp-action="Add"
-      method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="appointmentId" value="@Model.Id" />
+    <form asp-controller="AppointmentParticipants"
+          asp-action="Add"
+          method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="appointmentId" value="@Model.Id" />
 
-    <select name="userId" asp-items="ViewBag.PotentialParticipants">
-    </select>
+        <select name="userId" asp-items="ViewBag.PotentialParticipants">
+        </select>
 
-    <button type="submit">Add</button>
-</form>
+        <button type="submit">Add</button>
+    </form>
+}
 
 <br />
 
-<a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
 <a asp-action="Index">Back</a>
+@if (canManageAppointment)
+{
+    @:|
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+}

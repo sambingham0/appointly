@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Team Details";
+    var canManageTeam = ViewBag.CanManageTeam is bool value && value;
 }
 
 <h1>Team Details</h1>
@@ -25,30 +26,40 @@
     @foreach (var member in Model.Members)
     {
         <li>
-            @member.User?.DisplayName (@member.User?.Email)
-            <form asp-controller="TeamMembers" asp-action="Remove" method="post" style="display:inline">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="teamId" value="@Model.Id" />
-                <input type="hidden" name="userId" value="@member.UserId" />
-                <button type="submit" class="btn btn-sm btn-danger">Remove</button>
-            </form>
+            @member.User?.DisplayName (@member.User?.Email) - @member.Role
+            @if (canManageTeam)
+            {
+                <form asp-controller="TeamMembers" asp-action="Remove" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="teamId" value="@Model.Id" />
+                    <input type="hidden" name="userId" value="@member.UserId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                </form>
+            }
         </li>
     }
 </ul>
 
-<h4>Add Member</h4>
-<form asp-controller="TeamMembers" asp-action="Add" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="teamId" value="@Model.Id" />
-    <div class="form-group">
-        <select name="userId" class="form-control" style="max-width:300px; display:inline-block;" 
-                asp-items="@(new SelectList(ViewBag.PotentialMembers, "Id", "DisplayName"))">
-        </select>
-        <button type="submit" class="btn btn-primary">Add</button>
-    </div>
-</form>
+@if (canManageTeam)
+{
+    <h4>Add Member</h4>
+    <form asp-controller="TeamMembers" asp-action="Add" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="teamId" value="@Model.Id" />
+        <div class="form-group">
+            <select name="userId" class="form-control" style="max-width:300px; display:inline-block;" 
+                    asp-items="@(new SelectList(ViewBag.PotentialMembers, "Id", "DisplayName"))">
+            </select>
+            <button type="submit" class="btn btn-primary">Add</button>
+        </div>
+    </form>
+}
 
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
+    @if (canManageTeam)
+    {
+        @:|
+        <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+    }
 </div>

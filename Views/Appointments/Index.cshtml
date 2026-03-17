@@ -1,5 +1,9 @@
 @model IEnumerable<appointly.Models.Appointment>
 
+@{
+    var manageableAppointmentIds = ViewBag.ManageableAppointmentIds as HashSet<int> ?? new HashSet<int>();
+}
+
 <h1>Appointments</h1>
 
 <p>
@@ -30,8 +34,12 @@
             <td>@a.Team?.Name</td>
             <td>
                 <a asp-action="Details" asp-route-id="@a.Id">Details</a> |
-                <a asp-action="Edit" asp-route-id="@a.Id">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@a.Id">Delete</a>
+                @if (manageableAppointmentIds.Contains(a.Id))
+                {
+                    <a asp-action="Edit" asp-route-id="@a.Id">Edit</a>
+                    @:|
+                    <a asp-action="Delete" asp-route-id="@a.Id">Delete</a>
+                }
             </td>
         </tr>
 }

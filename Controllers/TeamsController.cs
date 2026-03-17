@@ -1,3 +1,4 @@
+using appointly.Extensions;
 using appointly.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,17 @@ public class TeamsController : Controller
     // GET: Teams
     public async Task<IActionResult> Index()
     {
-        return View(await _db.Teams.ToListAsync());
+        var teams = await _db.Teams.ToListAsync();
+        var currentUserId = User.GetAppointlyUserId();
+
+        ViewBag.AdminTeamIds = string.IsNullOrWhiteSpace(currentUserId)
+            ? new HashSet<int>()
+            : await _db.TeamMembers
+                .Where(tm => tm.UserId == currentUserId && tm.Role == TeamRole.Admin)
+                .Select(tm => tm.TeamId)
+                .ToHashSetAsync();
+
+        return View(teams);
     }
 
     // GET: Teams/Details/5
@@ -32,6 +43,10 @@ public class TeamsController : Controller
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (team == null) return NotFound();
+
+        var currentUserId = User.GetAppointlyUserId();
+        ViewBag.CanManageTeam = !string.IsNullOrWhiteSpace(currentUserId)
+            && await _db.IsTeamAdminAsync(team.Id, currentUserId);
 
         // Pass a list of users not in the team you could add
         var existingMemberIds = team.Members.Select(m => m.UserId).ToList();
@@ -56,9 +71,18 @@ public class TeamsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("Id,Name")] Team team)
     {
+        var currentUserId = User.GetAppointlyUserId();
+        if (string.IsNullOrWhiteSpace(currentUserId)) return Forbid();
+
         if (ModelState.IsValid)
         {
             _db.Add(team);
+            _db.TeamMembers.Add(new TeamMember
+            {
+                Team = team,
+                UserId = currentUserId,
+                Role = TeamRole.Admin
+            });
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Details), new { id = team.Id });
         }
@@ -69,6 +93,12 @@ public class TeamsController : Controller
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
+
+        var currentUserId = User.GetAppointlyUserId();
+        if (string.IsNullOrWhiteSpace(currentUserId) || !await _db.IsTeamAdminAsync(id.Value, currentUserId))
+        {
+            return Forbid();
+        }
 
         var team = await _db.Teams.FindAsync(id);
         if (team == null) return NotFound();
@@ -81,6 +111,12 @@ public class TeamsController : Controller
     public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Team team)
     {
         if (id != team.Id) return NotFound();
+
+        var currentUserId = User.GetAppointlyUserId();
+        if (string.IsNullOrWhiteSpace(currentUserId) || !await _db.IsTeamAdminAsync(id, currentUserId))
+        {
+            return Forbid();
+        }
 
         if (ModelState.IsValid)
         {
@@ -104,6 +140,12 @@ public class TeamsController : Controller
     {
         if (id == null) return NotFound();
 
+        var currentUserId = User.GetAppointlyUserId();
+        if (string.IsNullOrWhiteSpace(currentUserId) || !await _db.IsTeamAdminAsync(id.Value, currentUserId))
+        {
+            return Forbid();
+        }
+
         var team = await _db.Teams
             .FirstOrDefaultAsync(m => m.Id == id);
         if (team == null) return NotFound();
@@ -116,6 +158,12 @@ public class TeamsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+        var currentUserId = User.GetAppointlyUserId();
+        if (string.IsNullOrWhiteSpace(currentUserId) || !await _db.IsTeamAdminAsync(id, currentUserId))
+        {
+            return Forbid();
+        }
+
         var team = await _db.Teams.FindAsync(id);
         if (team != null)
         {
