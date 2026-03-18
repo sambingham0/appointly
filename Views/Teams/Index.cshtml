@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Teams";
+    var adminTeamIds = ViewBag.AdminTeamIds as HashSet<int> ?? new HashSet<int>();
 }
 
 <h1>Teams</h1>
@@ -25,9 +26,13 @@
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                @if (adminTeamIds.Contains(item.Id))
+                {
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                    @:|
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                }
             </td>
         </tr>
 }

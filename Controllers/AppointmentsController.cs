@@ -105,6 +105,8 @@ public class AppointmentsController : Controller
             model.EndTimeUtc = parsed.AddHours(1).ToUniversalTime();
         }
 
+        var currentUserId = CurrentUserId();
+        await PopulateDropdownsAsync(currentUserId);
         return View(model);
     }
 
