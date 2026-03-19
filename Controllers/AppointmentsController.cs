@@ -146,7 +146,7 @@ public class AppointmentsController : Controller
 
         // return RedirectToAction(nameof(Details), new { id = appointment.Id });
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(AppointmentsByUser));
     }
 
     // =========================
