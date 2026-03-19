@@ -198,7 +198,7 @@ public class AppointmentsController : Controller
 
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(AppointmentsByUser));
     }
 
     // =========================
@@ -263,12 +263,19 @@ public class AppointmentsController : Controller
     // =========================
     public JsonResult GetAppointments()
     {
-        var appointments = _db.Appointments.Select(a => new
+        var now = DateTime.UtcNow;
+        var userId = CurrentUserId();
+        var appointments = _db.Appointments
+        .Where(a => a.CreatedByUserId == userId)
+        .Select(a => new
         {
             id = a.Id,
             title = a.Title,
             start = a.StartTimeUtc.ToString("o"),
-            end = a.EndTimeUtc.ToString("o")
+            end = a.EndTimeUtc.ToString("o"),
+            color = a.EndTimeUtc < now ? "#a1a1a1" : "#873829"
+
+
         });
 
         return Json(appointments);
