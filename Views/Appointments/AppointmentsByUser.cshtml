@@ -26,13 +26,14 @@
             <tbody>
                 @foreach (var a in Model)
                 {
-                    <tr>
+                    var isPast = a.EndTimeUtc < DateTime.UtcNow;
+                    <tr style="opacity: @(isPast ? "0.45" : "1");">
                         <td>@a.Title</td>
                         <td>@a.StartTimeUtc.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</td>
                         <td>@a.EndTimeUtc.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</td>
                         <td>
-                            <span class="badge @(a.Status == appointly.Models.AppointmentStatus.Scheduled ? "bg-primary" : a.Status == appointly.Models.AppointmentStatus.Completed ? "bg-success" : "bg-secondary")">
-                                @a.Status
+                            <span class="badge @(isPast ? "bg-secondary" : a.Status == appointly.Models.AppointmentStatus.Scheduled ? "bg-primary" : "bg-success")">
+                                @(isPast ? "Past" : a.Status.ToString())
                             </span>
                         </td>
                         <td>@(a.Team?.Name ?? "-")</td>

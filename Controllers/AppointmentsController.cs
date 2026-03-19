@@ -104,6 +104,12 @@ public class AppointmentsController : Controller
             model.StartTimeUtc = parsed.ToUniversalTime();
             model.EndTimeUtc = parsed.AddHours(1).ToUniversalTime();
         }
+        else
+        {
+            var now = DateTime.UtcNow;
+            model.StartTimeUtc = now;
+            model.EndTimeUtc = now.AddHours(1).ToUniversalTime();
+        }
 
         var currentUserId = CurrentUserId();
         await PopulateDropdownsAsync(currentUserId);
@@ -140,7 +146,7 @@ public class AppointmentsController : Controller
 
         // return RedirectToAction(nameof(Details), new { id = appointment.Id });
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(AppointmentsByUser));
     }
 
     // =========================
@@ -192,7 +198,7 @@ public class AppointmentsController : Controller
 
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(AppointmentsByUser));
     }
 
     // =========================
@@ -229,7 +235,7 @@ public class AppointmentsController : Controller
         _db.Appointments.Remove(appointment);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(AppointmentsByUser));
     }
 
     // =========================
@@ -257,12 +263,19 @@ public class AppointmentsController : Controller
     // =========================
     public JsonResult GetAppointments()
     {
-        var appointments = _db.Appointments.Select(a => new
+        var now = DateTime.UtcNow;
+        var userId = CurrentUserId();
+        var appointments = _db.Appointments
+        .Where(a => a.CreatedByUserId == userId)
+        .Select(a => new
         {
             id = a.Id,
             title = a.Title,
             start = a.StartTimeUtc.ToString("o"),
-            end = a.EndTimeUtc.ToString("o")
+            end = a.EndTimeUtc.ToString("o"),
+            color = a.EndTimeUtc < now ? "#a1a1a1" : "#873829"
+
+
         });
 
         return Json(appointments);

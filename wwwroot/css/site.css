@@ -1,37 +1,37 @@
 :root {
-    --appt-red: #C0513A;
-    --appt-purple: #7B6FA0;
-    --appt-dark: #2B2B2B;
-    --appt-cream: #F5F2EE;
-    --appt-muted: #9A9189;
-    --appt-green: #9FC688;
+  --appt-red: #c0513a;
+  --appt-purple: #7b6fa0;
+  --appt-dark: #2b2b2b;
+  --appt-cream: #f5f2ee;
+  --appt-muted: #9a9189;
+  --appt-green: #9fc688;
+  /* --fc-event-bg-color: #2b2b2b;
+  --fc-event-border-color: #2b2b2b; */
 }
 
 /*to override fullcalendari.io css*/
 .fc .fc-daygrid-day-number,
 .fc .fc-col-header-cell-cushion {
-    color: #2B2B2B;
-    text-decoration: none;
-}
-.fc-daygrid-event-dot{
-      border: (8px/ 2) solid #2B2B2B ;
-
+  color: #2b2b2b;
+  text-decoration: none;
 }
 
 .fc .fc-event-title,
 .fc .fc-daygrid-event {
-    color: white;
+  color: white;
 }
-
 
 .fc .fc-daygrid-day.fc-day-today {
-    background-color: rgba(192, 81, 58, 0.1);
+  background-color: rgba(192, 81, 58, 0.1);
 }
 
-
 .fc .fc-daygrid-event {
-    background-color: #C0513A;
-    border-color: #C0513A;
+  background-color: #c0513a;
+  border-color: #c0513a;
+}
+.fc-event-past {
+  background-color: #bbbbbb !important;
+  border-color: #bbbbbb !important;
 }
 html {
   font-size: 14px;
@@ -43,8 +43,14 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+  box-shadow:
+    0 0 0 0.1rem white,
+    0 0 0 0.25rem #258cfb;
 }
 
 html {
@@ -54,23 +60,24 @@ html {
 
 body {
   margin-bottom: 60px;
-  font-family: 'Segoe UI', system-ui;
+  font-family: "Segoe UI", system-ui;
   /* background-color: var(--appt-cream); */
 }
-.logo{
-  font-family: 'Happy Monkey', system-ui;
+.logo {
+  font-family: "Happy Monkey", system-ui;
 }
-  
-footer{
+
+footer {
   background-color: white;
 }
 
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
