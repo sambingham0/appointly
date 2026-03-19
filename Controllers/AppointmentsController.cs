@@ -104,6 +104,12 @@ public class AppointmentsController : Controller
             model.StartTimeUtc = parsed.ToUniversalTime();
             model.EndTimeUtc = parsed.AddHours(1).ToUniversalTime();
         }
+        else
+        {
+            var now = DateTime.UtcNow;
+            model.StartTimeUtc = now;
+            model.EndTimeUtc = now.AddHours(1).ToUniversalTime();
+        }
 
         var currentUserId = CurrentUserId();
         await PopulateDropdownsAsync(currentUserId);
@@ -229,7 +235,7 @@ public class AppointmentsController : Controller
         _db.Appointments.Remove(appointment);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(AppointmentsByUser));
     }
 
     // =========================
