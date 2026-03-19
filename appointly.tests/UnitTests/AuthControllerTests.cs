@@ -33,7 +33,8 @@ public class AuthControllerTests
         // Assert we return a 500 problem response.
         var problem = Assert.IsType<ObjectResult>(result);
         Assert.Equal(500, problem.StatusCode);
-        Assert.Equal("Google authentication is not configured.", problem.Value);
+        var details = Assert.IsType<ProblemDetails>(problem.Value);
+        Assert.Equal("Google authentication is not configured.", details.Detail);
     }
 
     // Login when Google Scheme Configured returns challenge with Google Scheme
@@ -171,6 +172,7 @@ public class AuthControllerTests
         IAuthenticationService? authenticationService = null)
     {
         var services = new ServiceCollection();
+        services.AddControllers();
         services.AddSingleton(authenticationService ?? new FakeAuthenticationService());
 
         var httpContext = new DefaultHttpContext
