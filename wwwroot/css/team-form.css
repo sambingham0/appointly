@@ -1,0 +1,39 @@
+/* styles for create/edit team forms */
+
+/* Layout */
+.form-container {
+  max-width: 600px;
+}
+
+/* Inputs */
+.form-control {
+  border-radius: 1rem;
+}
+
+/* Buttons */
+.btn-primary-custom {
+  background-color: #7b6fa0;
+  color: white;
+  border: none;
+}
+
+.btn-primary-custom:hover {
+  background-color: #6a5c91;
+  color: white;
+}
+
+.btn-dark-custom {
+  background-color: #2b2b2b;
+  color: #f5f2ee;
+  border: none;
+}
+
+.btn-dark-custom:hover {
+  background-color: #1f1f1f;
+  color: #f5f2ee;
+}
+
+/* Validation */
+.text-danger.small {
+  font-size: 0.85rem;
+}
