@@ -5,61 +5,60 @@
     var canManageTeam = ViewBag.CanManageTeam is bool value && value;
 }
 
-<h1>Team Details</h1>
+<div class="container py-4 form-container">
+    <div class="card shadow-sm rounded-4">
+        <div class="card-body">
+            <h2 class="mb-3 fw-semibold">Team Details</h2>
+            <dl class="row mb-4">
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Name)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+            </dl>
 
-<div>
-    <h4>Team</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-    </dl>
-</div>
+            <h4 class="fw-semibold mb-3">Members</h4>
+            <ul class="list-group mb-3">
+                @foreach (var member in Model.Members)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@member.User?.DisplayName (@member.User?.Email) - @member.Role</span>
+                        @if (canManageTeam)
+                        {
+                            <form asp-controller="TeamMembers" asp-action="Remove" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="teamId" value="@Model.Id" />
+                                <input type="hidden" name="userId" value="@member.UserId" />
+                                <button type="submit" class="btn btn-sm btn-danger rounded-4">Remove</button>
+                            </form>
+                        }
+                    </li>
+                }
+            </ul>
 
-<hr />
-<h3>Members</h3>
-<ul>
-    @foreach (var member in Model.Members)
-    {
-        <li>
-            @member.User?.DisplayName (@member.User?.Email) - @member.Role
             @if (canManageTeam)
             {
-                <form asp-controller="TeamMembers" asp-action="Remove" method="post" style="display:inline">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="teamId" value="@Model.Id" />
-                    <input type="hidden" name="userId" value="@member.UserId" />
-                    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
-                </form>
+                <div class="mb-4">
+                    <h5 class="fw-semibold">Add Member</h5>
+                    <form asp-controller="TeamMembers" asp-action="Add" method="post" class="row g-2 align-items-center">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="teamId" value="@Model.Id" />
+                        <div class="col-auto">
+                            <select name="userId" class="form-select rounded-4" style="min-width:200px;"
+                                    asp-items="@(new SelectList(ViewBag.PotentialMembers, "Id", "DisplayName"))">
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-success rounded-4 px-3">Add</button>
+                        </div>
+                    </form>
+                </div>
             }
-        </li>
-    }
-</ul>
 
-@if (canManageTeam)
-{
-    <h4>Add Member</h4>
-    <form asp-controller="TeamMembers" asp-action="Add" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="teamId" value="@Model.Id" />
-        <div class="form-group">
-            <select name="userId" class="form-control" style="max-width:300px; display:inline-block;" 
-                    asp-items="@(new SelectList(ViewBag.PotentialMembers, "Id", "DisplayName"))">
-            </select>
-            <button type="submit" class="btn btn-primary">Add</button>
+            <div class="d-flex gap-2 mt-3">
+                <a asp-action="Index" class="btn btn-dark-custom rounded-4 px-4 fw-semibold">Back to List</a>
+                @if (canManageTeam)
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary-custom rounded-4 px-4 fw-semibold">Edit</a>
+                }
+            </div>
         </div>
-    </form>
-}
-
-<div>
-    <a asp-action="Index">Back to List</a>
-    @if (canManageTeam)
-    {
-        @:|
-        <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-    }
+    </div>
 </div>

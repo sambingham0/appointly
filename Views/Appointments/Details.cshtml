@@ -6,76 +6,83 @@
 
 <h1>Appointment Details</h1>
 
-<dl>
-    <dt>Title</dt>
-    <dd>@Model.Title</dd>
+<div class="container py-4 form-container">
+    <div class="card shadow-sm rounded-4">
+        <div class="card-body">
+            <h2 class="mb-3 fw-semibold">Appointment Details</h2>
+            <dl class="row mb-4">
+                <dt class="col-sm-3">Title</dt>
+                <dd class="col-sm-9">@Model.Title</dd>
 
-    <dt>Description</dt>
-    <dd>@Model.Description</dd>
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">@Model.Description</dd>
 
-    <dt>Start</dt>
-    <dd>@Model.StartTimeUtc</dd>
+                <dt class="col-sm-3">Start</dt>
+                <dd class="col-sm-9">@Model.StartTimeUtc</dd>
 
-    <dt>End</dt>
-    <dd>@Model.EndTimeUtc</dd>
+                <dt class="col-sm-3">End</dt>
+                <dd class="col-sm-9">@Model.EndTimeUtc</dd>
 
-    <dt>Status</dt>
-    <dd>@Model.Status</dd>
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">@Model.Status</dd>
 
-    <dt>Created By</dt>
-    <dd>@Model.CreatedByUser?.DisplayName</dd>
+                <dt class="col-sm-3">Created By</dt>
+                <dd class="col-sm-9">@Model.CreatedByUser?.DisplayName</dd>
 
-    <dt>Team</dt>
-    <dd>@Model.Team?.Name</dd>
-</dl>
+                <dt class="col-sm-3">Team</dt>
+                <dd class="col-sm-9">@Model.Team?.Name</dd>
+            </dl>
 
-<hr />
+            <h4 class="fw-semibold mb-3">Participants</h4>
+            <ul class="list-group mb-3">
+                @foreach (var p in Model.Participants)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@p.User?.DisplayName</span>
+                        @if (canManageAppointment)
+                        {
+                            <form asp-controller="AppointmentParticipants"
+                                  asp-action="Remove"
+                                  method="post"
+                                  class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="appointmentId" value="@Model.Id" />
+                                <input type="hidden" name="userId" value="@p.UserId" />
+                                <button type="submit" class="btn btn-sm btn-danger rounded-4">Remove</button>
+                            </form>
+                        }
+                    </li>
+                }
+            </ul>
 
-<h3>Participants</h3>
+            @if (canManageAppointment)
+            {
+                <div class="mb-4">
+                    <h5 class="fw-semibold">Add Participant</h5>
+                    <form asp-controller="AppointmentParticipants"
+                          asp-action="Add"
+                          method="post"
+                          class="row g-2 align-items-center">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="appointmentId" value="@Model.Id" />
+                        <div class="col-auto">
+                            <select name="userId" asp-items="ViewBag.PotentialParticipants" class="form-select rounded-4">
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-success rounded-4 px-3">Add</button>
+                        </div>
+                    </form>
+                </div>
+            }
 
-<ul>
-@foreach (var p in Model.Participants)
-{
-    <li>
-        @p.User?.DisplayName
-        @if (canManageAppointment)
-        {
-            <form asp-controller="AppointmentParticipants"
-                  asp-action="Remove"
-                  method="post"
-                  style="display:inline;">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="appointmentId" value="@Model.Id" />
-                <input type="hidden" name="userId" value="@p.UserId" />
-                <button type="submit">Remove</button>
-            </form>
-        }
-    </li>
-}
-</ul>
-
-@if (canManageAppointment)
-{
-    <h4>Add Participant</h4>
-
-    <form asp-controller="AppointmentParticipants"
-          asp-action="Add"
-          method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="appointmentId" value="@Model.Id" />
-
-        <select name="userId" asp-items="ViewBag.PotentialParticipants">
-        </select>
-
-        <button type="submit">Add</button>
-    </form>
-}
-
-<br />
-
-<a asp-action="AppointmentsByUser">Back</a>
-@if (canManageAppointment)
-{
-    @:|
-    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-}
+            <div class="d-flex gap-2 mt-3">
+                <a asp-action="AppointmentsByUser" class="btn btn-dark-custom rounded-4 px-4 fw-semibold">Back</a>
+                @if (canManageAppointment)
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary-custom rounded-4 px-4 fw-semibold">Edit</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
