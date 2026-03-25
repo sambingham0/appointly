@@ -6,6 +6,7 @@
 //Delete(id) - delete appointment
 
 using appointly.Models;
+using appointly.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -80,6 +81,15 @@ public class AppointmentsController : Controller
 
         if (appointment == null) return NotFound();
 
+        // Set canManageAppointment for UI
+        var currentUserId = CurrentUserId();
+        bool canManage = false;
+        if (!string.IsNullOrEmpty(currentUserId))
+        {
+            canManage = await _db.CanManageAppointmentAsync(appointment.Id, currentUserId);
+        }
+        ViewBag.CanManageAppointment = canManage;
+
         var currentParticipantIds = appointment.Participants.Select(p => p.UserId).ToHashSet();
 
         var potentialParticipants = await _db.Users
@@ -144,6 +154,35 @@ public class AppointmentsController : Controller
         _db.Appointments.Add(appointment);
         await _db.SaveChangesAsync();
 
+        // add all team members as participants if a team is assigned
+        if (appointment.TeamId.HasValue)
+        {
+            var teamMembers = await _db.TeamMembers
+                .Where(tm => tm.TeamId == appointment.TeamId.Value)
+                .Select(tm => tm.UserId)
+                .ToListAsync();
+
+            var existingParticipantIds = await _db.AppointmentParticipants
+                .Where(ap => ap.AppointmentId == appointment.Id)
+                .Select(ap => ap.UserId)
+                .ToListAsync();
+
+            var newParticipants = teamMembers
+                .Where(userId => !existingParticipantIds.Contains(userId))
+                .Select(userId => new AppointmentParticipant
+                {
+                    AppointmentId = appointment.Id,
+                    UserId = userId
+                })
+                .ToList();
+
+            if (newParticipants.Count > 0)
+            {
+                _db.AppointmentParticipants.AddRange(newParticipants);
+                await _db.SaveChangesAsync();
+            }
+        }
+
         // return RedirectToAction(nameof(Details), new { id = appointment.Id });
 
         return RedirectToAction(nameof(AppointmentsByUser));
@@ -197,6 +236,35 @@ public class AppointmentsController : Controller
         appointment.UpdatedAtUtc = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
+
+        // add all team members as participants if a team is assigned
+        if (appointment.TeamId.HasValue)
+        {
+            var teamMembers = await _db.TeamMembers
+                .Where(tm => tm.TeamId == appointment.TeamId.Value)
+                .Select(tm => tm.UserId)
+                .ToListAsync();
+
+            var existingParticipantIds = await _db.AppointmentParticipants
+                .Where(ap => ap.AppointmentId == appointment.Id)
+                .Select(ap => ap.UserId)
+                .ToListAsync();
+
+            var newParticipants = teamMembers
+                .Where(userId => !existingParticipantIds.Contains(userId))
+                .Select(userId => new AppointmentParticipant
+                {
+                    AppointmentId = appointment.Id,
+                    UserId = userId
+                })
+                .ToList();
+
+            if (newParticipants.Count > 0)
+            {
+                _db.AppointmentParticipants.AddRange(newParticipants);
+                await _db.SaveChangesAsync();
+            }
+        }
 
         return RedirectToAction(nameof(AppointmentsByUser));
     }
