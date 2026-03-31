@@ -5,3 +5,5 @@ obj/
 *.suo
 *.db
 appointly.db
+.db-shm
+.db-wal
