@@ -2,6 +2,7 @@ using appointly;
 using appointly.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,12 @@ builder.Services.AddAuthorization();
 builder.Services.AddSqlite<AppointlyContext>("Data Source=appointly.db");
 
 var app = builder.Build();
+
+// Ensure correct protocol for redirects
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
