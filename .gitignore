@@ -4,6 +4,4 @@ obj/
 *.user
 *.suo
 *.db
-appointly.db
-.db-shm
-.db-wal
+appointly.db*
